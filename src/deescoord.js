@@ -7,10 +7,10 @@ function isPromise(obj) {
 }
 
 export class Deescoord {
-  constructor(token) {
+  constructor(token, MockClient) {
     this.token = token;
 
-    this.client = new Discord.Client({
+    this.client = MockClient || new Discord.Client({
       token,
       autorun: true,
     });
