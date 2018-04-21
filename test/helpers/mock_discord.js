@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 export class MockDiscordClient {
   constructor() {
     this.on = sandbox.spy();

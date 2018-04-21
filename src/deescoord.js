@@ -1,9 +1,9 @@
-import Discord from 'discord.io';
+import Discord from "discord.io";
 
 global._deescoordListeners = {};
 
 function isPromise(obj) {
-  return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
+  return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof obj.then === "function";
 }
 
 export class Deescoord {
@@ -15,20 +15,20 @@ export class Deescoord {
       autorun: true,
     });
 
-    this.client.on('ready', () => {
+    this.client.on("ready", () => {
       console.log(`Logged in as ${this.client.username} - ${this.client.id}\n`);
 
       if (!this.prefix) {
-        this.prefix = '.';
+        this.prefix = ".";
       }
     });
-    this.client.on('message', this._parser());
+    this.client.on("message", this._parser());
 
-    this.prefix = '.';
+    this.prefix = ".";
   }
 
   _isRegistered(message) {
-    const [ prefix ] = message.split(' ');
+    const [ prefix ] = message.split(" ");
 
     if (prefix.substring(this.prefix.length) in global._deescoordListeners) {
       return true;
@@ -46,7 +46,7 @@ export class Deescoord {
 
       if (message.startsWith(`@${self.client.username}`) ||
           message.startsWith(self.client.username)) {
-        const [ , method, ...params ] = message.split(' ');
+        const [ , method, ...params ] = message.split(" ");
 
         if (method in global._deescoordListeners) {
           self._sendMessage(channelID, method, params, event.d);
@@ -54,14 +54,14 @@ export class Deescoord {
       } else if (
           message.startsWith(self.prefix) &&
           self._isRegistered(message)) {
-        const [ prefix, ...params] = message.split(' ');
+        const [ prefix, ...params] = message.split(" ");
         const method = prefix.substring(self.prefix.length);
 
         self._sendMessage(channelID, method, params, event.d);
       }
 
-      if ('*' in global._deescoordListeners) {
-        self._sendMessage(channelID, '*', message, event.d);
+      if ("*" in global._deescoordListeners) {
+        self._sendMessage(channelID, "*", message, event.d);
       }
     }
   }
