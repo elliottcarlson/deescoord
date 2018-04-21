@@ -1,4 +1,4 @@
-# deescoord [![npm version](https://badge.fury.io/js/deescoord.svg)](https://badge.fury.io/js/deescoord) [![Build Status](https://travis-ci.org/elliottcarlson/deescoord.svg?branch=master)](https://travis-ci.org/elliottcarlson/deescoord) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5c43cf385708406f9b1f112771314b89)](https://www.codacy.com/app/trendinteractive/deescoord?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=elliottcarlson/deescoord&amp;utm_campaign=Badge_Grade) [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/5c43cf385708406f9b1f112771314b89)](https://www.codacy.com/app/trendinteractive/deescoord?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=elliottcarlson/deescoord&amp;utm_campaign=Badge_Coverage)
+# deescoord [![npm version](https://badge.fury.io/js/deescoord.svg)](https://badge.fury.io/js/deescoord) [![Build Status](https://travis-ci.org/elliottcarlson/deescoord.svg?branch=master)](https://travis-ci.org/elliottcarlson/deescoord) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f47a26d2c14544e7b9c33a7edfbc948f)](https://www.codacy.com/app/trendinteractive/deescoord?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=elliottcarlson/deescoord&amp;utm_campaign=Badge_Grade) 
 
 A simple bot framework for [Discord](http://www.discordapp.com).
 
@@ -43,7 +43,7 @@ Discord would look like:
 
     class Bot extends Deescoord {
         constructor() {
-            super(YOUR_SLACK_API_TOKEN);
+            super(YOUR_DISCORD_BOT_TOKEN);
         }
 
         @command
