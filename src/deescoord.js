@@ -42,7 +42,7 @@ export class Deescoord {
 
     return (user, userID, channelID, message, event) => {
 
-      if (user === this.client.username) { return }
+      if (user === this.client.username) { return; }
 
       if (message.startsWith(`@${self.client.username}`) ||
           message.startsWith(self.client.username)) {
