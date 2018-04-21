@@ -1,4 +1,4 @@
-import Discord from "discord.io";
+import Discord from 'discord.io';
 
 global._deescoordListeners = {};
 
@@ -28,7 +28,7 @@ export class Deescoord {
   }
 
   _isRegistered(message) {
-    let [ prefix ] = message.split(' ');
+    const [ prefix ] = message.split(' ');
 
     if (prefix.substring(this.prefix.length) in global._deescoordListeners) {
       return true;
@@ -38,7 +38,7 @@ export class Deescoord {
   }
 
   _parser() {
-    let self = this;
+    const self = this;
 
     return (user, userID, channelID, message, event) => {
 
@@ -46,7 +46,7 @@ export class Deescoord {
 
       if (message.startsWith(`@${self.client.username}`) ||
           message.startsWith(self.client.username)) {
-        let [ , method, ...params ] = message.split(' ');
+        const [ , method, ...params ] = message.split(' ');
 
         if (method in global._deescoordListeners) {
           self._sendMessage(channelID, method, params, event.d);
@@ -54,8 +54,8 @@ export class Deescoord {
       } else if (
           message.startsWith(self.prefix) &&
           self._isRegistered(message)) {
-        let [ prefix, ...params] = message.split(' ');
-        let method = prefix.substring(self.prefix.length);
+        const [ prefix, ...params] = message.split(' ');
+        const method = prefix.substring(self.prefix.length);
 
         self._sendMessage(channelID, method, params, event.d);
       }
