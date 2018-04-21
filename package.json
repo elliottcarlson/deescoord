@@ -1,6 +1,6 @@
 {
   "name": "deescoord",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Discord bot framework",
   "main": "lib/deescoord.js",
   "scripts": {
