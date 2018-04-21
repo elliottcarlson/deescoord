@@ -1,0 +1,47 @@
+{
+  "name": "deescoord",
+  "version": "1.0.0",
+  "description": "Discord bot framework",
+  "main": "lib/deescoord.js",
+  "scripts": {
+    "coverage": "istanbul --include-all-sources cover -x **/lib/** _mocha --",
+    "flow": "flow; test $? -eq 0 -o $? -eq 2",
+    "prepublish": "babel src --out-dir lib",
+    "test": "mocha",
+    "test-coverage": "npm run coverage && cat ./coverage/lcov.info | codacy-coverage && rm -rf ./coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elliottcarlson/deescoord.git"
+  },
+  "keywords": [
+    "discord",
+    "bot"
+  ],
+  "author": "Elliott Carlson <github@sublim.nl>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/elliottcarlson/deescoord/issues"
+  },
+  "homepage": "https://github.com/elliottcarlson/deescoord#readme",
+  "dependencies": {
+    "discord.io": "github:woor/discord.io#gateway_v6"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "codacy-coverage": "^2.1.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.1.1",
+    "mocha-lcov-reporter": "^1.3.0",
+    "sinon": "^4.5.0",
+    "sinon-chai": "^3.0.0"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
+  }
+}
