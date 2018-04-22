@@ -1,12 +1,12 @@
 {
   "name": "deescoord",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Discord bot framework",
   "main": "lib/deescoord.js",
   "scripts": {
     "coverage": "istanbul --include-all-sources cover -x **/lib/** _mocha --",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
-    "prepublish": "babel src --out-dir lib",
+    "prepare": "babel src --out-dir lib",
     "test": "mocha",
     "test-coverage": "npm run coverage && cat ./coverage/lcov.info | codacy-coverage && rm -rf ./coverage"
   },
@@ -25,7 +25,9 @@
   },
   "homepage": "https://github.com/elliottcarlson/deescoord#readme",
   "dependencies": {
-    "discord.io": "github:woor/discord.io#gateway_v6"
+    "discord.io": "github:woor/discord.io#gateway_v6",
+    "lame": "^1.2.4",
+    "sleep": "^5.1.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

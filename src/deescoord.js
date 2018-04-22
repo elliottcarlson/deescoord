@@ -1,4 +1,7 @@
 import Discord from "discord.io";
+import Lame from "lame";
+import { usleep } from "sleep";
+import stream from "stream";
 
 global._deescoordListeners = {};
 
@@ -82,6 +85,21 @@ export class Deescoord {
             message: `:warning: ${err}`,
           });
         });
+      } else if (response instanceof stream.Readable) {
+        let voiceChannelID = this._getVoiceChannel(raw.author.id);
+
+        this.client.joinVoiceChannel(voiceChannelID, (err, events) => {
+          usleep(100);
+
+          this.client.getAudioContext(voiceChannelID, (err, stream) => {
+            let lame = new Lame.Decoder();
+            lame.once("readable", () => {
+              stream.send(lame);
+            });
+
+            response.pipe(lame);
+          });
+        });
       } else {
         this.client.sendMessage({
           to: channelID,
@@ -92,6 +110,22 @@ export class Deescoord {
 
     return;
   }
+
+  _getVoiceChannel(userID) {
+    for (let server in this.client.servers) {
+      for (let member in this.client.servers[server].members) {
+        if (member === userID) {
+          if (this.client.servers[server].members[member].voice_channel_id !== "undefined") {
+            return this.client.servers[server].members[member].voice_channel_id;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+
 }
 
 export function command(target, key) {
