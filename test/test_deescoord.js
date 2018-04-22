@@ -131,7 +131,16 @@ describe("Deescoord class", () => {
 
     it("can receive a message in the `@name` trigger format", () => {
       let method = "testRegisteredMethod";
-      let message = `@${instance.username} ${method} ${params.join(" ")}`;
+      let message = `@${instance.client.username} ${method} ${params.join(" ")}`;
+
+      parser(user, userID, channelID, message, { d: message });
+
+      _sendMessage.should.be.calledWithExactly(channelID, method, params, message);
+    });
+
+    it("can receive a message in the `<@user_id>` trigger format", () => {
+      let method = "testRegisteredMethod";
+      let message = `<@${instance.client.id}> ${method} ${params.join(" ")}`;
 
       parser(user, userID, channelID, message, { d: message });
 

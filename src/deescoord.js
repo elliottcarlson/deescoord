@@ -41,10 +41,10 @@ export class Deescoord {
     const self = this;
 
     return (user, userID, channelID, message, event) => {
-
-      if (user === this.client.username) { return; }
+      if (user === this.client.username || !message) { return; }
 
       if (message.startsWith(`@${self.client.username}`) ||
+          message.startsWith(`<@${self.client.id}>`) ||
           message.startsWith(self.client.username)) {
         const [ , method, ...params ] = message.split(" ");
 
