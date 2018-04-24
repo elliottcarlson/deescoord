@@ -79,7 +79,7 @@ export class Deescoord {
           msg.channel.send(`:warning: ${err}`);
         });
       } else if (response instanceof stream.Readable) {
-        if (!msg.member.voiceChannel) {
+        if (!msg.member || !msg.member.voiceChannel) {
           msg.channel.send("Not in a voice channel...");
           return;
         }
