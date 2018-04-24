@@ -4,7 +4,7 @@ import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import { Deescoord, command } from "../src/deescoord.js";
 import { MockDiscordClient } from "./helpers/mock_discord.js";
-import Discord from "discord.io";
+import Discord from "discord.js";
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -72,12 +72,20 @@ describe("Deescoord class", () => {
       instance.should.be.an.instanceof(Deescoord);
     });
 
-    it("has the token in the token property", () => {
-      instance.token.should.equal(token);
+    it("called the login method with token", () => {
+      client.login.should.have.been.calledWith(token);
     });
 
-    it("added two listeners on the on method of Discord.Client", () => {
+    it("added two event listeners", () => {
       client.on.should.be.calledTwice;
+    });
+
+    it("registers an event listening for the ready event", () => {
+      client.on.should.have.been.calledWith("ready");
+    });
+
+    it("registers an event listening for the message event", () => {
+      client.on.should.have.been.calledWith("message");
     });
 
     it("has a prefix property", () => {
@@ -101,6 +109,15 @@ describe("Deescoord class", () => {
     let parser = instance._parser();
     let _sendMessage = null;
     let starBackup = null;
+
+    let createMessage = (content) => {
+      return {
+        content,
+        channel: {
+          send: sandbox.spy()
+        }
+      }
+    };
 
     beforeEach(() => {
       _sendMessage = sinon.spy(instance, "_sendMessage");
@@ -131,36 +148,36 @@ describe("Deescoord class", () => {
 
     it("can receive a message in the `@name` trigger format", () => {
       let method = "testRegisteredMethod";
-      let message = `@${instance.client.username} ${method} ${params.join(" ")}`;
+      let message = createMessage(`@${instance.client.user.username} ${method} ${params.join(" ")}`);
 
-      parser(user, userID, channelID, message, { d: message });
+      parser(message);
 
-      _sendMessage.should.be.calledWithExactly(channelID, method, params, message);
+      _sendMessage.should.be.calledWithExactly(method, params, message);
     });
 
     it("can receive a message in the `<@user_id>` trigger format", () => {
       let method = "testRegisteredMethod";
-      let message = `<@${instance.client.id}> ${method} ${params.join(" ")}`;
+      let message = createMessage(`<@${instance.client.user.id}> ${method} ${params.join(" ")}`);
 
-      parser(user, userID, channelID, message, { d: message });
+      parser(message);
 
-      _sendMessage.should.be.calledWithExactly(channelID, method, params, message);
+      _sendMessage.should.be.calledWithExactly(method, params, message);
     });
 
     it("can receive a message in the prefix trigger format", () => {
       let method = "testRegisteredMethod";
-      let message = `${instance.prefix}${method} ${params.join(" ")}`;
+      let message = createMessage(`${instance.prefix}${method} ${params.join(" ")}`);
 
-      parser(user, userID, channelID, message, { d: message });
+      parser(message);
 
-      _sendMessage.should.be.calledWithExactly(channelID, method, params, message);
+      _sendMessage.should.be.calledWithExactly(method, params, message);
     });
 
     it("will not run on non-registered methods", () => {
       let method = "testNonRegisteredMethod";
-      let message = `${instance.prefix}${method} ${params.join(" ")}`;
+      let message = createMessage(`${instance.prefix}${method} ${params.join(" ")}`);
 
-      parser(user, userID, channelID, message, { d: message });
+      parser(message);
 
       _sendMessage.should.not.be.called;
     });
@@ -170,10 +187,11 @@ describe("Deescoord class", () => {
         global._deescoordListeners["*"] = starBackup;
       }
 
-      let message = "this is a test string";
-      parser(user, userID, channelID, message, { d: message });
+      let message = createMessage("this is a test string");
 
-      _sendMessage.should.be.calledWithExactly(channelID, "*", message, message);
+      parser(message);
+
+      _sendMessage.should.be.calledWithExactly("*", message.content, message);
     });
   });
 
@@ -185,78 +203,84 @@ describe("Deescoord class", () => {
     let testNamedDecoratedMethodOriginalMethod = sinon.spy(instance, "testNamedDecoratedMethodOriginalMethod");
     let testStarDecoratedMethod = sinon.spy(instance, "testStarDecoratedMethod");
 
+    let mockMessage = (content) => {
+      return {
+        channel: {
+          send: sandbox.spy()
+        }
+      }
+    };
+
     it("calls a registered method with string as return value", () => {
       let method = "testRegisteredMethod";
+      let message = mockMessage();
 
-      instance._sendMessage(channelID, method, params, {});
+      instance._sendMessage(method, params, message);
 
       testRegisteredMethod.should.be.called;
       testRegisteredMethod.should.have.returned(method);
 
-      instance.client.sendMessage.should.be.calledWithExactly({
-        to: channelID,
-        message: method,
-      });
+      message.channel.send.should.be.calledWithExactly(method);
     });
 
     it("calls a registered method with a resolved promise as return value", () => {
       let method = "testResolvedPromiseRegisteredMethod";
+      let message = mockMessage();
 
-      instance._sendMessage(channelID, method, params, {});
+      instance._sendMessage(method, params, message);
 
       testResolvedPromiseRegisteredMethod.should.be.called;
       testResolvedPromiseRegisteredMethod.should.have.returned(sinon.match.instanceOf(Promise));
+
+      testResolvedPromiseRegisteredMethod.returnValues[0].should.eventually.equal(method);
     });
 
     it("calls a registered method with a rejected promise as return value", () => {
       let method = "testRejectedPromiseRegisteredMethod";
+      let message = mockMessage();
 
-      instance._sendMessage(channelID, method, params, {});
+      instance._sendMessage(method, params, message);
 
       testRejectedPromiseRegisteredMethod.should.be.called;
       testRejectedPromiseRegisteredMethod.should.have.returned(sinon.match.instanceOf(Promise));
+
+      testRejectedPromiseRegisteredMethod.returnValues[0].should.be.rejectedWith(method);
     });
 
     it("calls a decorated method", () => {
       let method = "testDecoratedMethod";
+      let message = mockMessage();
 
-      instance._sendMessage(channelID, method, params, {});
+      instance._sendMessage(method, params, message);
 
       testDecoratedMethod.should.be.called;
       testDecoratedMethod.should.have.returned(method);
 
-      instance.client.sendMessage.should.be.calledWithExactly({
-        to: channelID,
-        message: method,
-      });
+      message.channel.send.should.be.calledWithExactly(method);
     });
 
     it("calls a named decorated method", () => {
       let method = "testNamedDecoratedMethod";
+      let message = mockMessage();
 
-      instance._sendMessage(channelID, method, params, {});
+      instance._sendMessage(method, params, message);
 
       testNamedDecoratedMethodOriginalMethod.should.be.called;
       testNamedDecoratedMethodOriginalMethod.should.have.returned(method);
 
-      instance.client.sendMessage.should.be.calledWithExactly({
-        to: channelID,
-        message: method,
-      });
+      message.channel.send.should.be.calledWithExactly(method);
     });
 
     it("calls a * decorated catch all method", () => {
       let method = "testStarDecoratedMethod";
+      let message = mockMessage();
 
-      instance._sendMessage(channelID, "*", params, {});
+      instance._sendMessage("*", params, message);
 
       testStarDecoratedMethod.should.be.called;
       testStarDecoratedMethod.should.have.returned(method);
 
-      instance.client.sendMessage.should.be.calledWithExactly({
-        to: channelID,
-        message: method
-      });
+      message.channel.send.should.be.calledWithExactly(method);
     });
   });
 });

@@ -1,6 +1,4 @@
-import Discord from "discord.io";
-import Lame from "lame";
-import { usleep } from "sleep";
+import Discord from "discord.js";
 import stream from "stream";
 
 global._deescoordListeners = {};
@@ -11,15 +9,10 @@ function isPromise(obj) {
 
 export class Deescoord {
   constructor(token, MockClient) {
-    this.token = token;
-
-    this.client = MockClient || new Discord.Client({
-      token,
-      autorun: true,
-    });
+    this.client = MockClient || new Discord.Client();
 
     this.client.on("ready", () => {
-      console.log(`Logged in as ${this.client.username} - ${this.client.id}\n`);
+      console.log(`Logged in as ${this.client.user.username} - ${this.client.user.id}\n`);
 
       if (!this.prefix) {
         this.prefix = ".";
@@ -27,7 +20,13 @@ export class Deescoord {
     });
     this.client.on("message", this._parser());
 
+    this.client.login(token);
+
     this.prefix = ".";
+  }
+
+  commands() {
+    return global._deescoordListeners;
   }
 
   _isRegistered(message) {
@@ -43,68 +42,57 @@ export class Deescoord {
   _parser() {
     const self = this;
 
-    return (user, userID, channelID, message, event) => {
-      if (user === this.client.username || !message) { return; }
+    return (msg) => {
+      if (!msg || !msg.content) { return; }
 
-      if (message.startsWith(`@${self.client.username}`) ||
-          message.startsWith(`<@${self.client.id}>`) ||
-          message.startsWith(self.client.username)) {
-        const [ , method, ...params ] = message.split(" ");
+      if (msg.content.startsWith(`@${self.client.user.username}`) ||
+          msg.content.startsWith(`<@${self.client.user.id}>`) ||
+          msg.content.startsWith(self.client.user.username)) {
+        const [ , method, ...params ] = msg.content.split(" ");
 
         if (method in global._deescoordListeners) {
-          self._sendMessage(channelID, method, params, event.d);
+          self._sendMessage(method, params, msg);
         }
       } else if (
-          message.startsWith(self.prefix) &&
-          self._isRegistered(message)) {
-        const [ prefix, ...params] = message.split(" ");
+          msg.content.startsWith(self.prefix) &&
+          self._isRegistered(msg.content)) {
+        const [ prefix, ...params] = msg.content.split(" ");
         const method = prefix.substring(self.prefix.length);
 
-        self._sendMessage(channelID, method, params, event.d);
+        self._sendMessage(method, params, msg);
       }
 
       if ("*" in global._deescoordListeners) {
-        self._sendMessage(channelID, "*", message, event.d);
+        self._sendMessage("*", msg.content, msg);
       }
     };
   }
 
-  _sendMessage(channelID, method, params, raw) {
-    let response = this[global._deescoordListeners[method]](params, raw);
+  _sendMessage(method, params, msg) {
+    let response = this[global._deescoordListeners[method]](params, msg);
 
     if (response) {
       if (isPromise(response)) {
         response.then((data) => {
-          this.client.sendMessage({
-            to: channelID,
-            message: data,
-          });
+          msg.channel.send(data);
         }, (err) => {
-          this.client.sendMessage({
-            to: channelID,
-            message: `:warning: ${err}`,
-          });
+          msg.channel.send(`:warning: ${err}`);
         });
       } else if (response instanceof stream.Readable) {
-        let voiceChannelID = this._getVoiceChannel(raw.author.id);
+        if (!msg.member.voiceChannel) {
+          msg.channel.send(`Not in a voice channel...`);
+          return;
+        }
 
-        this.client.joinVoiceChannel(voiceChannelID, (err, events) => {
-          usleep(100);
-
-          this.client.getAudioContext(voiceChannelID, (err, stream) => {
-            let lame = new Lame.Decoder();
-            lame.once("readable", () => {
-              stream.send(lame);
-            });
-
-            response.pipe(lame);
+        msg.member.voiceChannel.join()
+        .then((audio) => {
+          audio.playStream(response, {
+            seek: 0,
+            volume: 1
           });
-        });
+        }).catch(console.error);
       } else {
-        this.client.sendMessage({
-          to: channelID,
-          message: response,
-        });
+        msg.channel.send(response);
       }
     }
 
