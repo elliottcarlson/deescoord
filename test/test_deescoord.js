@@ -5,6 +5,7 @@ import sinonChai from "sinon-chai";
 import { Deescoord, command } from "../src/deescoord.js";
 import { MockDiscordClient } from "./helpers/mock_discord.js";
 import Discord from "discord.js";
+import stream from "stream";
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
@@ -33,6 +34,18 @@ describe("Deescoord class", () => {
       return Promise.reject("testRejectedPromiseRegisteredMethod");
     }
 
+    testStreamRegisteredMethod() {
+      let pass = new stream.PassThrough();
+      let writable = new stream.Readable();
+
+      pass.pipe(writable);
+      pass.unpipe(writable);
+
+      pass.write("testStreamRegisteredMethod");
+
+      return pass;
+    }
+
     testNoReturnRegisteredMethod() { }
 
     @command
@@ -54,13 +67,10 @@ describe("Deescoord class", () => {
   command(Bot, "testRegisteredMethod");
   command(Bot, "testResolvedPromiseRegisteredMethod");
   command(Bot, "testRejectedPromiseRegisteredMethod");
+  command(Bot, "testStreamRegisteredMethod");
   command(Bot, "testNoReturnRegisteredMethod");
 
   let instance = new Bot(token, client);
-
-  let user = "test-user";
-  let userID = 12345;
-  let channelID = 54321;
   let params = [ "test", "params" ];
 
   describe("#constructor()", () => {
@@ -116,7 +126,7 @@ describe("Deescoord class", () => {
         channel: {
           send: sandbox.spy()
         }
-      }
+      };
     };
 
     beforeEach(() => {
@@ -199,6 +209,7 @@ describe("Deescoord class", () => {
     let testRegisteredMethod = sinon.spy(instance, "testRegisteredMethod");
     let testResolvedPromiseRegisteredMethod = sinon.spy(instance, "testResolvedPromiseRegisteredMethod");
     let testRejectedPromiseRegisteredMethod = sinon.spy(instance, "testRejectedPromiseRegisteredMethod");
+    let testStreamRegisteredMethod = sinon.spy(instance, "testStreamRegisteredMethod");
     let testDecoratedMethod = sinon.spy(instance, "testDecoratedMethod");
     let testNamedDecoratedMethodOriginalMethod = sinon.spy(instance, "testNamedDecoratedMethodOriginalMethod");
     let testStarDecoratedMethod = sinon.spy(instance, "testStarDecoratedMethod");
@@ -245,6 +256,37 @@ describe("Deescoord class", () => {
       testRejectedPromiseRegisteredMethod.should.have.returned(sinon.match.instanceOf(Promise));
 
       testRejectedPromiseRegisteredMethod.returnValues[0].should.be.rejectedWith(method);
+    });
+
+    it("calls a registered method with a stream as return value", (done) => {
+      let method = "testStreamRegisteredMethod";
+      let message = {
+        channel: {
+          send: sandbox.spy()
+        },
+        member: {
+          voiceChannel: {
+            join: sandbox.stub().returns({
+              then: sandbox.stub().returns({
+                catch: sandbox.spy()
+              })
+            })
+          }
+        }
+      };
+
+      instance._sendMessage(method, params, message);
+
+      testStreamRegisteredMethod.should.be.called;
+      testStreamRegisteredMethod.should.have.returned(sinon.match.instanceOf(stream.Readable));
+
+      testStreamRegisteredMethod.returnValues[0].on('data', (chunk) => {
+        chunk.toString().should.equal(method);
+
+        message.member.voiceChannel.join.should.be.called;
+        done();
+      });
+      testStreamRegisteredMethod.returnValues[0].resume();
     });
 
     it("calls a decorated method", () => {

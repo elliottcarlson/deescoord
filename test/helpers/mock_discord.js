@@ -8,6 +8,6 @@ export class MockDiscordClient {
     this.user = {
       username: Math.random().toString(36).substr(2, 18),
       id: Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000
-    }
+    };
   }
 }
