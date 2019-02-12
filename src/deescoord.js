@@ -90,7 +90,6 @@ export class Deescoord {
             seek: 0,
             volume: 1
           });
-          audio.close();
         }).catch(console.error);
       } else {
         msg.channel.send(response);
