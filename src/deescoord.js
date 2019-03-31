@@ -99,7 +99,9 @@ export class Deescoord {
         msg.member.voiceChannel.join().then((voiceConnection) => {
           const dispatcher = voiceConnection.playFile(response);
           dispatcher.on('end', () => {
-            msg.member.voiceChannel.leave();
+            setTimeout(() => {
+              msg.member.voiceChannel.leave();
+            }, 500);
           });
         }).catch(console.error);
       } else {
