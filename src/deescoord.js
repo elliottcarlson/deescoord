@@ -86,10 +86,9 @@ export class Deescoord {
 
         msg.member.voiceChannel.join().then((voiceConnection) => {
           const dispatcher = voiceConnection.playStream(response);
-          // something to try if this is still broken
-          // dispatcher.on('end', () => {
-          //   msg.member.voiceChannel.leave();
-          // });
+          dispatcher.on('end', () => {
+            msg.member.voiceChannel.leave();
+          });
         }).catch(console.error);
       } else if (response.substr(-4) === '.mp3') {
         if (!msg.member || !msg.member.voiceChannel) {
@@ -99,10 +98,9 @@ export class Deescoord {
 
         msg.member.voiceChannel.join().then((voiceConnection) => {
           const dispatcher = voiceConnection.playFile(response);
-          // something to try if this is still broken
-          // dispatcher.on('end', () => {
-          //   msg.member.voiceChannel.leave();
-          // });
+          dispatcher.on('end', () => {
+            msg.member.voiceChannel.leave();
+          });
         }).catch(console.error);
       } else {
         msg.channel.send(response);
