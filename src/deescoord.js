@@ -87,7 +87,9 @@ export class Deescoord {
         msg.member.voiceChannel.join().then((voiceConnection) => {
           const dispatcher = voiceConnection.playStream(response);
           dispatcher.on('end', () => {
-            msg.member.voiceChannel.leave();
+            setTimeout(() => {
+              msg.member.voiceChannel.leave();
+            }, 500);
           });
         }).catch(console.error);
       } else if (response.substr(-4) === '.mp3') {
