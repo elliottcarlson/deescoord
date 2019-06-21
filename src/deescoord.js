@@ -84,11 +84,26 @@ export class Deescoord {
           return;
         }
 
-        msg.member.voiceChannel.join()
-        .then((audio) => {
-          audio.playStream(response, {
-            seek: 0,
-            volume: 1
+        msg.member.voiceChannel.join().then((voiceConnection) => {
+          const dispatcher = voiceConnection.playStream(response);
+          dispatcher.on('end', () => {
+            setTimeout(() => {
+              msg.member.voiceChannel.leave();
+            }, 500);
+          });
+        }).catch(console.error);
+      } else if (response.substr(-4) === '.mp3') {
+        if (!msg.member || !msg.member.voiceChannel) {
+          msg.channel.send("Not in a voice channel...");
+          return;
+        }
+
+        msg.member.voiceChannel.join().then((voiceConnection) => {
+          const dispatcher = voiceConnection.playFile(response);
+          dispatcher.on('end', () => {
+            setTimeout(() => {
+              msg.member.voiceChannel.leave();
+            }, 500);
           });
         }).catch(console.error);
       } else {
